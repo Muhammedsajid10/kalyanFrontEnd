@@ -1,0 +1,100 @@
+.stock-badge {
+  background-color: var(--bg-hover);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+.stock-badge.low {
+  background-color: rgba(229, 62, 62, 0.1);
+  color: var(--error);
+  border-color: rgba(229, 62, 62, 0.2);
+}
+
+.action-buttons-center {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.stock-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  transition: var(--transition);
+}
+
+.stock-btn.in {
+  background-color: rgba(45, 90, 39, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(45, 90, 39, 0.2);
+}
+
+.stock-btn.in:hover {
+  background-color: var(--success);
+  color: white;
+}
+
+.stock-btn.out {
+  background-color: rgba(139, 30, 30, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(139, 30, 30, 0.2);
+}
+
+.stock-btn.out:hover {
+  background-color: var(--primary);
+  color: white;
+}
+
+.modal-title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-info-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 1.5rem;
+  background-color: var(--bg-dark);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-item label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.info-item span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.btn-success { background-color: var(--success) !important; color: white !important; }
+.btn-error { background-color: var(--primary) !important; color: white !important; }
+
+.text-success { color: var(--success); }
+.text-error { color: var(--primary); }
+
+.product-icon.red { background-color: rgba(139, 30, 30, 0.1); color: var(--primary); }
+.product-icon.blue { background-color: rgba(49, 130, 206, 0.1); color: #3182ce; }
+
+/* Reusing generic table styles */
+@import './Products.css';
