@@ -9,7 +9,8 @@ import {
   Settings,
   Menu,
   X,
-  PlusCircle
+  PlusCircle,
+  AlertTriangle
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -20,7 +21,9 @@ const Sidebar = ({ isOpen, toggle }) => {
     { name: 'Categories', icon: <Tags size={20} />, path: '/categories' },
     { name: 'Products', icon: <Package size={20} />, path: '/products' },
     { name: 'Sub Products', icon: <PlusCircle size={20} />, path: '/sub-products' },
+    { name: 'Product Stock', icon: <TrendingUp size={20} />, path: '/stocks' },
     { name: 'Stock Management', icon: <ClipboardList size={20} />, path: '/stock-management' },
+    { name: 'Low Stock', icon: <AlertTriangle size={20} />, path: '/low-stock' },
     { name: 'Stocks Report', icon: <TrendingUp size={20} />, path: '/stocks-report' },
   ];
 

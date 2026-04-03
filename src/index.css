@@ -1,31 +1,26 @@
 :root {
-  /* Core Palette - Kalyan Industrial Premium */
-  --primary: #630000;    /* Deep Metallic Maroon */
-  --primary-dark: #2d0000;
-  --primary-glow: rgba(99, 0, 0, 0.3);
-  --secondary: #0f0f0f;  /* Deep Black */
-  --accent: #d4af37;     /* Gold Brass Metallic */
-  --accent-light: #f1d35e;
-  --action-blue: #74b9ef; /* Functional Sky Blue */
-  
-  /* Neutral Palette - Refined Clean */
-  --bg-dark: radial-gradient(circle, #630000 0%, #2d0000 50%, #000000 100%);
-  --bg-card: #f8f9fa;    /* Clean Gray-White Portal Card */
-  --bg-input: #dce7f6;   /* Light Blue-Gray Input Surface */
-  --text-main: #333333;  /* High Contrast Charcoal */
-  --text-muted: #666666;
-  --text-inverse: #ffffff;
-  --border-color: #dee2e6;
+  /* Core Palette - Kalyan Industrial Theme (Dark Navy / Yellow) */
+  --primary: #f1c40f;    /* Bright Yellow/Gold */
+  --primary-hover: #f39c12;
+  --secondary: #0a192f;  /* Deep Navy Midnight */
+  --bg-main: #f1f5f9;    /* Light Grayish Background */
+  --bg-card-dark: #0a192f; /* Dark Navy for Cards */
+  --bg-card-light: #ffffff; /* Default White Card */
+  --text-main: #2c3e50;  /* Standard dark text */
+  --text-inverse: #ffffff; /* White text */
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --alert-danger: #e74c3c; /* Red for alerts */
+  --alert-warning: #fef3c7; /* Light warning banner */
   
   /* Dimensions & Effects */
-  --sidebar-width: 280px;
+  --sidebar-width: 260px;
   --header-height: 70px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  --transition: all 0.2s ease-in-out;
 }
 
 * {
@@ -35,8 +30,8 @@
 }
 
 body {
-  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
-  background-color: var(--bg-dark);
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--bg-main);
   color: var(--text-main);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -50,45 +45,58 @@ button {
   transition: var(--transition);
 }
 
-a {
-  text-decoration: none;
-  color: inherit;
+/* Common Layout Elements */
+
+.page-container {
+  padding: 24px;
+  animation: fadeIn 0.3s ease-out;
 }
 
-ul {
-  list-style: none;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Glassmorphism Classes */
-.glass {
-  background: rgba(28, 28, 28, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* Tables (mostly light theme in the main area) */
+.content-card {
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
   border: 1px solid var(--border-color);
 }
 
-.premium-gradient {
-  background: linear-gradient(135deg, #1c1c1c 0%, #0f0f0f 100%);
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.accent-glow {
-  text-shadow: 0 0 10px var(--accent-light);
+.data-table th {
+  background-color: #f8fafc;
+  color: #334155;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.9rem;
+  color: #475569;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+/* Form Styles */
+.submit-btn, .add-button {
+  background-color: var(--secondary);
+  color: white;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+.submit-btn:hover, .add-button:hover {
+  background-color: #0b1a2a;
 }

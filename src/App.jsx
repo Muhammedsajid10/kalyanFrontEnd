@@ -9,6 +9,8 @@ import Products from './pages/Products';
 import SubProducts from './pages/SubProducts';
 import StockManagement from './pages/StockManagement';
 import StocksReport from './pages/StocksReport';
+import ProductStock from './pages/ProductStock';
+import LowStockProducts from './pages/LowStockProducts';
 
 function App() {
   return (
@@ -21,8 +23,10 @@ function App() {
         <Route path="franchise" element={<Franchise />} />
         <Route path="products" element={<Products />} />
         <Route path="sub-products" element={<SubProducts />} />
+        <Route path="stocks" element={<ProductStock />} />
         <Route path="stock-management" element={<StockManagement />} />
         <Route path="stocks-report" element={<StocksReport />} />
+        <Route path="low-stock" element={<LowStockProducts />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -135,7 +135,7 @@ const Products = () => {
         </button>
       </div>
 
-      <div className="content-card glass">
+      <div className="content-card">
         <div className="table-controls">
           <div className="search-wrapper">
             <Search className="search-icon" size={18} />
