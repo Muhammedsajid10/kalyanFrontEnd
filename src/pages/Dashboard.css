@@ -6,7 +6,8 @@
 }
 
 .dashboard-header {
-  display: none; /* Already showing in header or redundant for this layout */
+  display: none;
+  /* Already showing in header or redundant for this layout */
 }
 
 /* Stats Cards Section */
@@ -20,57 +21,72 @@
 .stat-card {
   background-color: var(--bg-card-dark);
   color: white;
-  padding: 1.5rem;
-  border-radius: var(--radius-sm);
+  padding: 1.25rem 1.5rem;
+  border-radius: 4px;
   position: relative;
   overflow: hidden;
-  height: 140px;
+  height: 150px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
 }
 
 .stat-card.alert {
-  background-color: var(--alert-danger); /* Red alert card */
+  background-color: var(--alert-danger);
+  /* Red alert card */
   cursor: pointer;
 }
 
 .stat-label {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 0.5rem;
+  color: white;
+  margin-top: 0.5rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .stat-value {
-  font-size: 2.2rem;
-  font-weight: 400;
+  font-size: 1.8rem;
+  font-weight: 700;
   text-align: right;
   margin-top: auto;
   color: white;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  opacity: 1;
 }
+
 
 .stat-link {
   position: absolute;
-  bottom: 30px;
-  right: 15px;
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 500;
+  bottom: 25px;
+  right: 85px;
+  /* Pushing it left of the large number */
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
 }
 
-/* Yellow Progress Bar at bottom of card */
+/* Yellow Progress Bar at bottom left */
 .card-indicator {
   position: absolute;
   bottom: 12%;
-  left: 15px;
-  width: 50%;
+  left: 1.5rem;
+  width: 45%;
   height: 4px;
-  background-color: var(--primary); /* Yellow bar */
+  background-color: var(--primary);
+  /* Yellow bar */
   border-radius: 2px;
 }
 

@@ -7,12 +7,12 @@ import {
   ClipboardList, 
   TrendingUp, 
   Settings,
-  Menu,
   X,
   PlusCircle,
   AlertTriangle
 } from 'lucide-react';
 import './Sidebar.css';
+import logo from '../assets/kalyan logooo.png';
 
 const Sidebar = ({ isOpen, toggle }) => {
   const navItems = [
@@ -30,9 +30,8 @@ const Sidebar = ({ isOpen, toggle }) => {
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
-        <div className="logo-container">
-          <img src="/logo.png" alt="Kalyan Logo" className="logo-img" />
-          <span className="logo-text">Kalyan</span>
+        <div className="logo-wrapper">
+          <img src={logo} alt="Kalyan Logo" className="sidebar-logo" />
         </div>
         <button className="mobile-close" onClick={toggle}>
           <X size={24} />

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ArrowUpCircle, ArrowDownCircle, Search, Loader2, Package, Warehouse, History } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, Search, Loader2, Package, Warehouse, X } from 'lucide-react';
+import { toast } from 'react-toastify';
 import api from '../api/axios';
 import './StockManagement.css';
 
@@ -18,6 +19,7 @@ const StockManagement = () => {
       const response = await api.get('/subproduct/all');
       setItems(response.data.products || []);
     } catch (error) {
+      toast.error('Error fetching inventory data');
       console.error('Error fetching inventory:', error);
     } finally {
       setLoading(false);
@@ -46,10 +48,11 @@ const StockManagement = () => {
 
     try {
       await api.post(endpoint, payload);
+      toast.success(`Stock ${modalType === 'IN' ? 'added' : 'removed'} successfully`);
       fetchData();
       handleCloseModal();
     } catch (error) {
-      alert(error.response?.data?.message || 'Error processing transaction');
+      toast.error(error.response?.data?.message || 'Error processing transaction');
     } finally {
       setSubmitting(false);
     }
@@ -62,8 +65,8 @@ const StockManagement = () => {
   };
 
   const filteredItems = items.filter(i => 
-    i.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    i.productCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (i.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (i.productCode || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (i.franchise?.franchiseName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 

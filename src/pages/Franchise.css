@@ -1,3 +1,5 @@
+@import './Categories.css';
+
 .name-cell {
   display: flex;
   align-items: center;
@@ -9,5 +11,3 @@
   opacity: 0.7;
 }
 
-/* Reusing Categories.css logic in Franchise.jsx */
-@import './Categories.css';

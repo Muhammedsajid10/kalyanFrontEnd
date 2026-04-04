@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, X, Loader2, Layers, Filter } from 'lucide-react';
+import { toast } from 'react-toastify';
 import api from '../api/axios';
 import './SubProducts.css';
 
@@ -36,6 +37,7 @@ const SubProducts = () => {
       setProducts(prodRes.data.products || []);
       setFranchises(franRes.data.franchise || []);
     } catch (error) {
+      toast.error('Error fetching data');
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
@@ -72,7 +74,7 @@ const SubProducts = () => {
       rackNumber: Number(formData.rackNumber),
       franchise: formData.franchiseId,
       category: {
-        categoryId: formData.productId, // We wrap the master product as the category ID link for this sub-product instance
+        categoryId: formData.productId,
         categoryName: formData.categoryName
       }
     };
@@ -80,13 +82,15 @@ const SubProducts = () => {
     try {
       if (editingItem) {
         await api.put(`/subproduct/update/${editingItem._id}`, payload);
+        toast.success('Inventory item updated successfully');
       } else {
         await api.post('/subproduct/create', payload);
+        toast.success('Added to inventory successfully');
       }
       fetchData();
       handleCloseModal();
     } catch (error) {
-      alert(error.response?.data?.message || 'Error saving inventory item');
+      toast.error(error.response?.data?.message || 'Error saving inventory item');
     } finally {
       setSubmitting(false);
     }
@@ -96,8 +100,10 @@ const SubProducts = () => {
     if (window.confirm('Are you sure you want to delete this inventory item?')) {
       try {
         await api.delete(`/subproduct/delete/${id}`);
+        toast.success('Item deleted successfully');
         fetchData();
       } catch (error) {
+        toast.error('Error deleting item');
         console.error('Error deleting sub-product:', error);
       }
     }
@@ -136,8 +142,8 @@ const SubProducts = () => {
   };
 
   const filteredItems = items.filter(i => 
-    i.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    i.productCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (i.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (i.productCode || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (i.franchise?.franchiseName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, X, Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 import api from '../api/axios';
 import './Categories.css';
 
@@ -17,6 +18,7 @@ const Categories = () => {
       const response = await api.get('/category/all');
       setCategories(response.data.category || []);
     } catch (error) {
+      toast.error('Error fetching categories');
       console.error('Error fetching categories:', error);
     } finally {
       setLoading(false);
@@ -33,12 +35,15 @@ const Categories = () => {
     try {
       if (editingCategory) {
         await api.put(`/category/update/${editingCategory._id}`, formData);
+        toast.success('Category updated successfully');
       } else {
         await api.post('/category/add', formData);
+        toast.success('Category added successfully');
       }
       fetchCategories();
       handleCloseModal();
     } catch (error) {
+      toast.error(error.response?.data?.message || 'Error saving category');
       console.error('Error saving category:', error);
     } finally {
       setSubmitting(false);
@@ -49,8 +54,10 @@ const Categories = () => {
     if (window.confirm('Are you sure you want to delete this category?')) {
       try {
         await api.delete(`/category/delete/${id}`);
+        toast.success('Category deleted successfully');
         fetchCategories();
       } catch (error) {
+        toast.error('Error deleting category');
         console.error('Error deleting category:', error);
       }
     }
@@ -69,7 +76,7 @@ const Categories = () => {
   };
 
   const filteredCategories = categories.filter(cat => 
-    cat.categoryName.toLowerCase().includes(searchTerm.toLowerCase())
+    (cat.categoryName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

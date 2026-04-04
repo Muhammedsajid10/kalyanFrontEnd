@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { 
   ArrowLeft, 
   AlertTriangle, 
-  Search, 
   RotateCcw, 
   RefreshCw, 
   Package, 
-  ArrowUpCircle, 
-  ArrowDownCircle,
   Loader2
 } from 'lucide-react';
 import api from '../api/axios';
@@ -22,7 +20,6 @@ const LowStockProducts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFranchise, setSelectedFranchise] = useState('');
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
   const fetchData = async () => {
     try {
@@ -40,9 +37,9 @@ const LowStockProducts = () => {
       ]);
 
       setProducts(prodRes.data.products || []);
-      setTotalPages(prodRes.data.totalPages || 1);
       setFranchises(franRes.data.franchise || []);
     } catch (error) {
+      toast.error('Error fetching low stock products');
       console.error('Error fetching low stock products:', error);
     } finally {
       setLoading(false);
@@ -68,7 +65,7 @@ const LowStockProducts = () => {
   };
 
   const getFranchiseName = () => {
-    if (!selectedFranchise) return "Kalyan main hub"; // Default as per screenshot
+    if (!selectedFranchise) return "Kalyan main hub";
     const f = franchises.find(fran => fran._id === selectedFranchise);
     return f ? f.franchiseName : "Kalyan main hub";
   };
@@ -123,7 +120,6 @@ const LowStockProducts = () => {
       <div className="attention-banner">
         <AlertTriangle size={18} />
         <span>{products.length} Products Need Attention</span>
-        <span className="count-badge">{products.length}</span>
       </div>
 
       <div className="table-card">
@@ -132,20 +128,19 @@ const LowStockProducts = () => {
             <thead>
               <tr>
                 <th>Sl.no</th>
-                <th>Rack Number</th>
-                <th>Product Code</th>
+                <th>Rack</th>
+                <th>Code</th>
                 <th>Product Name</th>
-                <th>Current Quantity</th>
-                <th>Minimum Quantity</th>
+                <th>Qty</th>
+                <th>Min</th>
                 <th>Price</th>
                 <th>Status</th>
-                <th>Stock In</th>
-                <th>Stock Out</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="10" className="loading-cell"><Loader2 className="spinner" /> Loading products...</td></tr>
+                <tr><td colSpan="9" className="loading-cell"><Loader2 className="spinner" /> Loading products...</td></tr>
               ) : products.length > 0 ? (
                 products.map((p, index) => (
                   <tr key={p._id}>
@@ -157,24 +152,28 @@ const LowStockProducts = () => {
                     <td>{p.minimumQuantity}</td>
                     <td>₹{p.price}</td>
                     <td>
-                      <span className="out-of-stock-badge">Out of Stock</span>
+                      {p.quantity === 0 ? (
+                        <span className="out-of-stock-badge">Out of Stock</span>
+                      ) : (
+                        <span className="low-stock-badge">Low Stock</span>
+                      )}
                     </td>
                     <td>
-                      <button className="action-btn stock-in" onClick={() => navigate('/stock-management')}>
-                        <Package size={16} />
-                        <span>Stock In</span>
-                      </button>
-                    </td>
-                    <td>
-                      <button className="action-btn stock-out" onClick={() => navigate('/stock-management')}>
-                        <Package size={16} />
-                        <span>Stock Out</span>
-                      </button>
+                      <div className="action-buttons">
+                        <button className="action-btn stock-in" onClick={() => navigate('/stock-management')}>
+                          <Package size={14} />
+                          <span>In</span>
+                        </button>
+                        <button className="action-btn stock-out" onClick={() => navigate('/stock-management')}>
+                          <Package size={14} />
+                          <span>Out</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="10" className="empty-state">No low stock products found.</td></tr>
+                <tr><td colSpan="9" className="empty-state">No low stock products found.</td></tr>
               )}
             </tbody>
           </table>

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, ChevronRight } from 'lucide-react';
 import api from '../api/axios';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalCategories: 0,
@@ -24,7 +26,7 @@ const Dashboard = () => {
           totalProducts: dashRes.data.totalProducts || 0,
           totalCategories: dashRes.data.totalCategories || 0,
           totalFranchise: dashRes.data.totalfranchise || 0,
-          lowStockCount: lowStockRes.data.count || lowStockRes.data.totalProducts || 0
+          lowStockCount: dashRes.data.lowStockCount || 0
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -83,7 +85,7 @@ const Dashboard = () => {
           <div className="alert-content">
             <span className="alert-title">Stock Alert!</span>
             You have <span className="font-bold">{stats.lowStockCount} products</span> below minimum quantity. 
-            <a href="/stocks" className="alert-link">View Details</a>
+            <a href="/low-stock" className="alert-link">View Details</a>
           </div>
         </div>
       )}

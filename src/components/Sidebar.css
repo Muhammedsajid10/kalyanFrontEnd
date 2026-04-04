@@ -18,20 +18,23 @@
   padding: 0 1.5rem;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   border-bottom: 2px solid #0f2a4a;
   background: var(--secondary);
 }
 
-.logo-container {
+.logo-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center;
+  height: 100%;
+  width: auto;
+  max-width: 200px;
 }
 
-.logo-img {
-  width: 100px; /* Adjusting for the logo style seen in screenshot */
-  height: 45px;
+.sidebar-logo {
+  height: 60px; /* Increased from 45px */
+  width: auto;
   object-fit: contain;
 }
 
@@ -53,6 +56,7 @@
   transition: var(--transition);
   font-weight: 500;
   font-size: 0.85rem;
+  text-decoration: none;
 }
 
 .nav-item:hover {
@@ -80,6 +84,7 @@
   color: #94a3b8;
   cursor: pointer;
   transition: var(--transition);
+  text-decoration: none;
 }
 
 .settings-link:hover {

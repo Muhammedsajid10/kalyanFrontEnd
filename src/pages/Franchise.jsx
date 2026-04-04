@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, X, Loader2, Warehouse } from 'lucide-react';
+import { toast } from 'react-toastify';
 import api from '../api/axios';
 import './Franchise.css';
 
@@ -17,6 +18,7 @@ const Franchise = () => {
       const response = await api.get('/franchise/all');
       setFranchises(response.data.franchise || []);
     } catch (error) {
+      toast.error('Error fetching franchises');
       console.error('Error fetching franchises:', error);
     } finally {
       setLoading(false);
@@ -31,12 +33,15 @@ const Franchise = () => {
     try {
       if (editingFranchise) {
         await api.put(`/franchise/update/${editingFranchise._id}`, formData);
+        toast.success('Franchise updated successfully');
       } else {
         await api.post('/franchise/add', formData);
+        toast.success('Franchise added successfully');
       }
       fetchFranchises();
       handleCloseModal();
     } catch (error) {
+      toast.error(error.response?.data?.message || 'Error saving franchise');
       console.error('Error saving franchise:', error);
     } finally {
       setSubmitting(false);
@@ -47,8 +52,10 @@ const Franchise = () => {
     if (window.confirm('Are you sure you want to delete this franchise?')) {
       try {
         await api.delete(`/franchise/delete/${id}`);
+        toast.success('Franchise deleted successfully');
         fetchFranchises();
       } catch (error) {
+        toast.error('Error deleting franchise');
         console.error('Error deleting franchise:', error);
       }
     }
@@ -67,7 +74,7 @@ const Franchise = () => {
   };
 
   const filteredFranchises = franchises.filter(f => 
-    f.franchiseName.toLowerCase().includes(searchTerm.toLowerCase())
+    (f.franchiseName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, Loader2, Package, Filter, AlertTriangle, CheckCircle2, MoreHorizontal, Layers, Warehouse, TrendingUp } from 'lucide-react';
+import { Search, Loader2, Package, Filter, AlertTriangle, CheckCircle2, Layers, Warehouse, TrendingUp } from 'lucide-react';
+import { toast } from 'react-toastify';
 import api from '../api/axios';
 import './ProductStock.css';
 
@@ -21,6 +22,7 @@ const ProductStock = () => {
       setStocks(stockRes.data.products || []);
       setFranchises(franRes.data.franchise || []);
     } catch (error) {
+      toast.error('Error fetching stock data');
       console.error('Error fetching stock data:', error);
     } finally {
       setLoading(false);
@@ -39,8 +41,8 @@ const ProductStock = () => {
 
   const filteredStocks = stocks.filter(stock => {
     const matchesSearch = 
-      stock.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      stock.productCode.toLowerCase().includes(searchTerm.toLowerCase());
+      (stock.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (stock.productCode || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFranchise = !franchiseFilter || (stock.franchise?._id === franchiseFilter || stock.franchise === franchiseFilter);
     

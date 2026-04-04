@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, X, Loader2, Package, Filter } from 'lucide-react';
+import { toast } from 'react-toastify';
 import api from '../api/axios';
 import './Products.css';
 
@@ -30,6 +31,7 @@ const Products = () => {
       setProducts(prodRes.data.products || []);
       setCategories(catRes.data.category || []);
     } catch (error) {
+      toast.error('Error fetching product data');
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
@@ -66,13 +68,15 @@ const Products = () => {
     try {
       if (editingProduct) {
         await api.put(`/product/update/${editingProduct._id}`, payload);
+        toast.success('Product updated successfully');
       } else {
         await api.post('/product/create', payload);
+        toast.success('New product created successfully');
       }
       fetchData();
       handleCloseModal();
     } catch (error) {
-      alert(error.response?.data?.message || 'Error saving product');
+      toast.error(error.response?.data?.message || 'Error saving product');
     } finally {
       setSubmitting(false);
     }
@@ -82,8 +86,10 @@ const Products = () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         await api.delete(`/product/delete/${id}`);
+        toast.success('Product deleted successfully');
         fetchData();
       } catch (error) {
+        toast.error('Error deleting product');
         console.error('Error deleting product:', error);
       }
     }
@@ -118,8 +124,8 @@ const Products = () => {
   };
 
   const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.productCode.toLowerCase().includes(searchTerm.toLowerCase())
+    (p.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.productCode || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
