@@ -29,7 +29,6 @@ const StockManagement = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleAction = (item, type) => {
-    console.log(item, "this is item")
     setSelectedItem(item);
     setModalType(type);
     setIsModalOpen(true);
@@ -40,7 +39,6 @@ const StockManagement = () => {
     if (!selectedItem || !quantity) return;
     setSubmitting(true);
     const endpoint = modalType === 'IN' ? '/stock/add' : '/stock/out';
-    console.log(selectedItem.stock[0].franchiseId || selectedItem.franchise, "this is franchise")
     const payload = {
       franchise: selectedItem.stock[0].franchiseId || selectedItem.franchise,
       product: selectedItem._id,
