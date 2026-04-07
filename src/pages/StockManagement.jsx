@@ -29,6 +29,7 @@ const StockManagement = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleAction = (item, type) => {
+    console.log(item, "this is item")
     setSelectedItem(item);
     setModalType(type);
     setIsModalOpen(true);
@@ -37,11 +38,11 @@ const StockManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedItem || !quantity) return;
-    
     setSubmitting(true);
     const endpoint = modalType === 'IN' ? '/stock/add' : '/stock/out';
+    console.log(selectedItem.stock[0].franchiseId || selectedItem.franchise, "this is franchise")
     const payload = {
-      franchise: selectedItem.franchise?._id || selectedItem.franchise,
+      franchise: selectedItem.stock[0].franchiseId || selectedItem.franchise,
       product: selectedItem._id,
       quantity: Number(quantity)
     };
@@ -64,7 +65,7 @@ const StockManagement = () => {
     setQuantity('');
   };
 
-  const filteredItems = items.filter(i => 
+  const filteredItems = items.filter(i =>
     (i.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (i.productCode || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (i.franchise?.franchiseName || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -83,9 +84,9 @@ const StockManagement = () => {
         <div className="table-controls">
           <div className="search-wrapper">
             <Search className="search-icon" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search items to update..." 
+            <input
+              type="text"
+              placeholder="Search items to update..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -168,8 +169,8 @@ const StockManagement = () => {
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Quantity to {modalType === 'IN' ? 'Add' : 'Remove'}</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                   placeholder="Enter positive number"

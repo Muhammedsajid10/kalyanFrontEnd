@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    
+
     if (token && storedUser && storedUser !== 'undefined') {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -30,24 +30,24 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       // For now using the backend endpoint based on Postman docs
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/auth/login`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://kalyanbackend.onrender.com'}/auth/login`, {
         email,
         password
       });
-      
+
       const { token, user: userData } = response.data;
-      
+
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
-      
+
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(userData);
-      
+
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Login failed' 
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Login failed'
       };
     }
   };
