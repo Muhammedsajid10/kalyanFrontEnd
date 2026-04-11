@@ -4,6 +4,8 @@ import { AlertTriangle, ChevronRight } from 'lucide-react';
 import api from '../api/axios';
 import './Dashboard.css';
 
+import LoadingScreen from '../components/LoadingScreen';
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
@@ -39,7 +41,7 @@ const Dashboard = () => {
   }, []);
 
   if (loading) {
-    return <div className="loading">Loading dashboard data...</div>;
+    return <LoadingScreen message="Syncing Dashboard Data..." />;
   }
 
   return (

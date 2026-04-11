@@ -1,0 +1,144 @@
+.loading-screen-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0a192f 0%, #050b16 100%);
+  z-index: 9999;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Industrial Geometric Loader */
+.industrial-loader {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader-ring {
+  position: absolute;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  animation: rotate linear infinite;
+}
+
+.loader-ring:nth-child(1) {
+  width: 100%;
+  height: 100%;
+  border-top-color: var(--primary);
+  opacity: 0.3;
+  animation-duration: 2.5s;
+}
+
+.loader-ring:nth-child(2) {
+  width: 80%;
+  height: 80%;
+  border-right-color: var(--primary);
+  opacity: 0.5;
+  animation-duration: 1.8s;
+  animation-direction: reverse;
+}
+
+.loader-ring:nth-child(3) {
+  width: 60%;
+  height: 60%;
+  border-bottom-color: var(--primary);
+  opacity: 0.8;
+  animation-duration: 1.2s;
+}
+
+.loader-core {
+  width: 40px;
+  height: 40px;
+  background-color: var(--primary);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px rgba(241, 196, 15, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+  transform: rotate(45deg);
+}
+
+.k-logo {
+  color: var(--secondary);
+  font-weight: 900;
+  font-size: 1.5rem;
+  transform: rotate(-45deg);
+}
+
+/* Text and Progress Bar */
+.loading-text-wrapper {
+  color: white;
+}
+
+.loading-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.loading-bar-track {
+  width: 240px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin: 0 auto 0.75rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-bar-filler {
+  position: absolute;
+  height: 100%;
+  width: 30%;
+  background-color: var(--primary);
+  box-shadow: 0 0 10px rgba(241, 196, 15, 0.6);
+  border-radius: 2px;
+  animation: slideAcross 2s ease-in-out infinite;
+}
+
+.loading-subtitle {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: rotate(45deg) scale(1); opacity: 1; }
+  50% { transform: rotate(45deg) scale(0.9); opacity: 0.8; }
+}
+
+@keyframes slideAcross {
+  0% { left: -30%; }
+  100% { left: 100%; }
+}
+
+/* Small adjustments for high quality */
+body.loading-active {
+  overflow: hidden;
+}

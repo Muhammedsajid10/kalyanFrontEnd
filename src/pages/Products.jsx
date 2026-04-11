@@ -16,6 +16,8 @@ const Products = () => {
     productCode: '',
     description: '',
     price: '',
+    quantity: '',
+    minimumQuantity: '',
     categoryId: '',
     categoryName: '',
     rackNumber: ''
@@ -52,17 +54,19 @@ const Products = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    
+console.log("sfdads")
     const payload = {
       name: formData.name,
       productCode: formData.productCode,
       description: formData.description,
       price: Number(formData.price),
+      quantity: Number(formData.quantity),
       rackNumber: Number(formData.rackNumber),
       category: {
         categoryId: formData.categoryId,
         categoryName: formData.categoryName
-      }
+      },
+      
     };
 
     try {
@@ -75,7 +79,9 @@ const Products = () => {
       }
       fetchData();
       handleCloseModal();
+
     } catch (error) {
+      console.log(error);
       toast.error(error.response?.data?.message || 'Error saving product');
     } finally {
       setSubmitting(false);
@@ -102,6 +108,8 @@ const Products = () => {
       productCode: product.productCode,
       description: product.description || '',
       price: product.price,
+      quantity: product.quantity || '',
+      minimumQuantity: product.minimumQuantity || '',
       categoryId: product.category?.categoryId || '',
       categoryName: product.category?.categoryName || '',
       rackNumber: product.rackNumber || ''
@@ -117,13 +125,15 @@ const Products = () => {
       productCode: '',
       description: '',
       price: '',
+      quantity: '',
+      minimumQuantity: '',
       categoryId: '',
       categoryName: '',
       rackNumber: ''
     });
   };
 
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = products.filter(p =>
     (p.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (p.productCode || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -145,9 +155,9 @@ const Products = () => {
         <div className="table-controls">
           <div className="search-wrapper">
             <Search className="search-icon" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search by name or code..." 
+            <input
+              type="text"
+              placeholder="Search by name or code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -218,8 +228,8 @@ const Products = () => {
               <div className="form-grid">
                 <div className="form-group">
                   <label>Product Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
@@ -227,8 +237,8 @@ const Products = () => {
                 </div>
                 <div className="form-group">
                   <label>Product Code</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={formData.productCode}
                     onChange={(e) => setFormData({ ...formData, productCode: e.target.value })}
                     required
@@ -245,24 +255,35 @@ const Products = () => {
                 </div>
                 <div className="form-group">
                   <label>Price (₹)</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     required
                   />
                 </div>
                 <div className="form-group">
+                  <label>Quantity</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                    required
+                  />
+                </div>
+               
+                <div className="form-group">
                   <label>Rack Number</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={formData.rackNumber}
                     onChange={(e) => setFormData({ ...formData, rackNumber: e.target.value })}
                   />
                 </div>
                 <div className="form-group full-width">
                   <label>Description</label>
-                  <textarea 
+                  <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows="3"

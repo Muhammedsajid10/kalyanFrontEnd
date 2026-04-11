@@ -1,22 +1,12 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LoadingScreen from './LoadingScreen';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div style={{ 
-        height: '100vh', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        backgroundColor: '#0f0f0f',
-        color: '#ffffff'
-      }}>
-        Loading...
-      </div>
-    );
+    return <LoadingScreen message="Authenticating Session..." />;
   }
 
   if (!user) {
