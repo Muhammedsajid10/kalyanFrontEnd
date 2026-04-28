@@ -1,23 +1,47 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ArrowUpCircle, ArrowDownCircle, Search, Loader2, Package, Warehouse, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../api/axios';
 import './StockManagement.css';
 
+const ITEMS_PER_PAGE = 10;
+
 const StockManagement = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('IN'); // 'IN' or 'OUT'
+  const [modalType, setModalType] = useState('IN');
   const [selectedItem, setSelectedItem] = useState(null);
   const [quantity, setQuantity] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchData = async () => {
+  // Debounce search
+  const debounceTimer = useRef(null);
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchTerm(val);
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedSearch(val);
+      setCurrentPage(1);
+    }, 400);
+  };
+
+  // Fetch paginated sub-products
+  const fetchItems = async (page = 1, search = '') => {
+    setLoading(true);
     try {
-      const response = await api.get('/subproduct/all');
-      setItems(response.data.products || []);
+      const params = new URLSearchParams({ page, limit: ITEMS_PER_PAGE });
+      if (search.trim()) params.append('search', search.trim());
+      const res = await api.get(`/subproduct/all?${params.toString()}`);
+      setItems(res.data.products || []);
+      setTotalPages(res.data.totalPages || 1);
+      setTotal(res.data.total || 0);
     } catch (error) {
       toast.error('Error fetching inventory data');
       console.error('Error fetching inventory:', error);
@@ -26,7 +50,13 @@ const StockManagement = () => {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchItems(currentPage, debouncedSearch);
+  }, [currentPage, debouncedSearch]);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
 
   const handleAction = (item, type) => {
     setSelectedItem(item);
@@ -48,7 +78,7 @@ const StockManagement = () => {
     try {
       await api.post(endpoint, payload);
       toast.success(`Stock ${modalType === 'IN' ? 'added' : 'removed'} successfully`);
-      fetchData();
+      fetchItems(currentPage, debouncedSearch);
       handleCloseModal();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error processing transaction');
@@ -63,11 +93,6 @@ const StockManagement = () => {
     setQuantity('');
   };
 
-  const filteredItems = items.filter(i =>
-    (i.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (i.productCode || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (i.franchise?.franchiseName || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="page-container">
@@ -86,7 +111,7 @@ const StockManagement = () => {
               type="text"
               placeholder="Search items to update..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
           </div>
         </div>
@@ -104,8 +129,8 @@ const StockManagement = () => {
             <tbody>
               {loading ? (
                 <tr><td colSpan="4" className="loading-row"><Loader2 className="spinner" /></td></tr>
-              ) : filteredItems.length > 0 ? (
-                filteredItems.map((item) => (
+              ) : items.length > 0 ? (
+                items.map((item) => (
                   <tr key={item._id}>
                     <td>
                       <div className="product-cell">
@@ -142,6 +167,34 @@ const StockManagement = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && total > 0 && (
+          <div className="pagination-bar">
+            <span className="pagination-info">
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, total)} of {total} items
+            </span>
+            <div className="pagination-controls">
+              <button className="page-btn" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>‹</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .reduce((acc, p, idx, arr) => {
+                  if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((item, idx) =>
+                  item === '...' ? (
+                    <span key={`e-${idx}`} className="page-ellipsis">…</span>
+                  ) : (
+                    <button key={item} className={`page-btn ${currentPage === item ? 'active' : ''}`} onClick={() => handlePageChange(item)}>{item}</button>
+                  )
+                )
+              }
+              <button className="page-btn" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>›</button>
+            </div>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (

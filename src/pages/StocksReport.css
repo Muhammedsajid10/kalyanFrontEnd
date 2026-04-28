@@ -52,34 +52,4 @@
   color: var(--primary);
 }
 
-.pagination {
-  margin-top: 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2rem;
-}
-
-.pager-btn {
-  padding: 0.5rem 1.5rem;
-  background-color: var(--bg-hover);
-  border-radius: var(--radius-sm);
-  font-weight: 500;
-  transition: var(--transition);
-}
-
-.pager-btn:hover:not(:disabled) {
-  background-color: var(--primary);
-  color: white;
-}
-
-.pager-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.page-info {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
 

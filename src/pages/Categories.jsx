@@ -1,22 +1,46 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Search, Edit2, Trash2, X, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../api/axios';
 import './Categories.css';
 
+const ITEMS_PER_PAGE = 10;
+
 const Categories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({ categoryName: '' });
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchCategories = async () => {
+  // Debounce search — wait 400ms after user stops typing
+  const debounceTimer = useRef(null);
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchTerm(val);
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedSearch(val);
+      setCurrentPage(1);
+    }, 400);
+  };
+
+  // Fetch paginated categories from server
+  const fetchCategories = async (page = 1, search = '') => {
+    setLoading(true);
     try {
-      const response = await api.get('/category/all');
-      setCategories(response.data.category || []);
+      const params = new URLSearchParams({ page, limit: ITEMS_PER_PAGE });
+      if (search.trim()) params.append('search', search.trim());
+      const res = await api.get(`/category/all?${params.toString()}`);
+      setCategories(res.data.category || []);
+      setTotalPages(res.data.totalPages || 1);
+      setTotal(res.data.total || 0);
     } catch (error) {
       toast.error('Error fetching categories');
       console.error('Error fetching categories:', error);
@@ -25,9 +49,14 @@ const Categories = () => {
     }
   };
 
+  // Re-fetch whenever page or search changes
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    fetchCategories(currentPage, debouncedSearch);
+  }, [currentPage, debouncedSearch]);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +69,7 @@ const Categories = () => {
         await api.post('/category/add', formData);
         toast.success('Category added successfully');
       }
-      fetchCategories();
+      fetchCategories(currentPage, debouncedSearch);
       handleCloseModal();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error saving category');
@@ -55,7 +84,10 @@ const Categories = () => {
       try {
         await api.delete(`/category/delete/${id}`);
         toast.success('Category deleted successfully');
-        fetchCategories();
+        // If deleting last item on this page, go back one page
+        const newPage = categories.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
+        setCurrentPage(newPage);
+        fetchCategories(newPage, debouncedSearch);
       } catch (error) {
         toast.error('Error deleting category');
         console.error('Error deleting category:', error);
@@ -75,10 +107,6 @@ const Categories = () => {
     setFormData({ categoryName: '' });
   };
 
-  const filteredCategories = categories.filter(cat => 
-    (cat.categoryName || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="page-container">
       <div className="page-header">
@@ -96,11 +124,11 @@ const Categories = () => {
         <div className="table-controls">
           <div className="search-wrapper">
             <Search className="search-icon" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search categories..." 
+            <input
+              type="text"
+              placeholder="Search categories..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
           </div>
         </div>
@@ -121,8 +149,8 @@ const Categories = () => {
                     <Loader2 className="spinner" />
                   </td>
                 </tr>
-              ) : filteredCategories.length > 0 ? (
-                filteredCategories.map((category) => (
+              ) : categories.length > 0 ? (
+                categories.map((category) => (
                   <tr key={category._id}>
                     <td className="font-medium">{category.categoryName}</td>
                     <td>{new Date(category.createdAt).toLocaleDateString()}</td>
@@ -146,6 +174,52 @@ const Categories = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && total > 0 && (
+          <div className="pagination-bar">
+            <span className="pagination-info">
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, total)} of {total} categories
+            </span>
+            <div className="pagination-controls">
+              <button
+                className="page-btn"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                ‹
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                .reduce((acc, page, idx, arr) => {
+                  if (idx > 0 && page - arr[idx - 1] > 1) acc.push('...');
+                  acc.push(page);
+                  return acc;
+                }, [])
+                .map((item, idx) =>
+                  item === '...' ? (
+                    <span key={`ellipsis-${idx}`} className="page-ellipsis">…</span>
+                  ) : (
+                    <button
+                      key={item}
+                      className={`page-btn ${currentPage === item ? 'active' : ''}`}
+                      onClick={() => handlePageChange(item)}
+                    >
+                      {item}
+                    </button>
+                  )
+                )
+              }
+              <button
+                className="page-btn"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
@@ -160,8 +234,8 @@ const Categories = () => {
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Category Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={formData.categoryName}
                   onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
                   placeholder="e.g. Electrical Tools"

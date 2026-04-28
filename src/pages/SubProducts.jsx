@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Search, Edit2, Trash2, X, Loader2, Layers, Filter } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../api/axios';
 import './SubProducts.css';
+
+const ITEMS_PER_PAGE = 10;
 
 const SubProducts = () => {
   const [items, setItems] = useState([]);
@@ -10,10 +12,14 @@ const SubProducts = () => {
   const [franchises, setFranchises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     productCode: '',
@@ -26,25 +32,59 @@ const SubProducts = () => {
     rackNumber: ''
   });
 
-  const fetchData = async () => {
+  // Debounce search
+  const debounceTimer = useRef(null);
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchTerm(val);
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedSearch(val);
+      setCurrentPage(1);
+    }, 400);
+  };
+
+  // Fetch paginated sub-products
+  const fetchItems = async (page = 1, search = '') => {
+    setLoading(true);
     try {
-      const [subRes, prodRes, franRes] = await Promise.all([
-        api.get('/subproduct/all'),
-        api.get('/product/all'),
-        api.get('/franchise/all')
-      ]);
-      setItems(subRes.data.products || []);
-      setProducts(prodRes.data.products || []);
-      setFranchises(franRes.data.franchise || []);
+      const params = new URLSearchParams({ page, limit: ITEMS_PER_PAGE });
+      if (search.trim()) params.append('search', search.trim());
+      const res = await api.get(`/subproduct/all?${params.toString()}`);
+      setItems(res.data.products || []);
+      setTotalPages(res.data.totalPages || 1);
+      setTotal(res.data.total || 0);
     } catch (error) {
-      toast.error('Error fetching data');
-      console.error('Error fetching data:', error);
+      toast.error('Error fetching inventory');
+      console.error('Error fetching inventory:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  // Fetch products & franchises once for form dropdowns
+  const fetchStatic = async () => {
+    try {
+      const [prodRes, franRes] = await Promise.all([
+        api.get('/product/all?page=1&limit=1000'),
+        api.get('/franchise/all')
+      ]);
+      setProducts(prodRes.data.products || []);
+      setFranchises(franRes.data.franchise || []);
+    } catch (error) {
+      console.error('Error fetching static data:', error);
+    }
+  };
+
+  useEffect(() => { fetchStatic(); }, []);
+
+  useEffect(() => {
+    fetchItems(currentPage, debouncedSearch);
+  }, [currentPage, debouncedSearch]);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
 
   const handleProductChange = (e) => {
     const selectedProd = products.find(p => p._id === e.target.value);
@@ -64,7 +104,7 @@ const SubProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    
+
     const payload = {
       name: formData.name,
       productCode: formData.productCode,
@@ -87,7 +127,7 @@ const SubProducts = () => {
         await api.post('/subproduct/create', payload);
         toast.success('Added to inventory successfully');
       }
-      fetchData();
+      fetchItems(currentPage, debouncedSearch);
       handleCloseModal();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error saving inventory item');
@@ -101,7 +141,9 @@ const SubProducts = () => {
       try {
         await api.delete(`/subproduct/delete/${id}`);
         toast.success('Item deleted successfully');
-        fetchData();
+        const newPage = items.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
+        setCurrentPage(newPage);
+        fetchItems(newPage, debouncedSearch);
       } catch (error) {
         toast.error('Error deleting item');
         console.error('Error deleting sub-product:', error);
@@ -141,11 +183,7 @@ const SubProducts = () => {
     });
   };
 
-  const filteredItems = items.filter(i => 
-    (i.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (i.productCode || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (i.franchise?.franchiseName || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
 
   return (
     <div className="page-container">
@@ -164,11 +202,11 @@ const SubProducts = () => {
         <div className="table-controls">
           <div className="search-wrapper">
             <Search className="search-icon" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search by name, code or franchise..." 
+            <input
+              type="text"
+              placeholder="Search by name, code or franchise..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
           </div>
           <button className="filter-btn">
@@ -193,8 +231,8 @@ const SubProducts = () => {
                 <tr>
                   <td colSpan="5" className="loading-row"><Loader2 className="spinner" /></td>
                 </tr>
-              ) : filteredItems.length > 0 ? (
-                filteredItems.map((item) => (
+              ) : items.length > 0 ? (
+                items.map((item) => (
                   <tr key={item._id}>
                     <td>
                       <div className="product-cell">
@@ -212,9 +250,9 @@ const SubProducts = () => {
                           {item.quantity} / {item.minimumQuantity}
                         </span>
                         <div className="stock-bar">
-                          <div 
-                            className="stock-progress" 
-                            style={{ 
+                          <div
+                            className="stock-progress"
+                            style={{
                               width: `${Math.min((item.quantity / (item.minimumQuantity || 1)) * 50, 100)}%`,
                               backgroundColor: item.quantity <= item.minimumQuantity ? 'var(--error)' : 'var(--success)'
                             }}
@@ -239,6 +277,52 @@ const SubProducts = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && total > 0 && (
+          <div className="pagination-bar">
+            <span className="pagination-info">
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, total)} of {total} items
+            </span>
+            <div className="pagination-controls">
+              <button
+                className="page-btn"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                ‹
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                .reduce((acc, page, idx, arr) => {
+                  if (idx > 0 && page - arr[idx - 1] > 1) acc.push('...');
+                  acc.push(page);
+                  return acc;
+                }, [])
+                .map((item, idx) =>
+                  item === '...' ? (
+                    <span key={`ellipsis-${idx}`} className="page-ellipsis">…</span>
+                  ) : (
+                    <button
+                      key={item}
+                      className={`page-btn ${currentPage === item ? 'active' : ''}`}
+                      onClick={() => handlePageChange(item)}
+                    >
+                      {item}
+                    </button>
+                  )
+                )
+              }
+              <button
+                className="page-btn"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
@@ -252,9 +336,9 @@ const SubProducts = () => {
               <div className="form-grid">
                 <div className="form-group">
                   <label>Franchise</label>
-                  <select 
-                    value={formData.franchiseId} 
-                    onChange={(e) => setFormData({...formData, franchiseId: e.target.value})}
+                  <select
+                    value={formData.franchiseId}
+                    onChange={(e) => setFormData({ ...formData, franchiseId: e.target.value })}
                     required
                   >
                     <option value="">Select Franchise</option>
@@ -265,8 +349,8 @@ const SubProducts = () => {
                 </div>
                 <div className="form-group">
                   <label>Select Product Template</label>
-                  <select 
-                    value={formData.productId} 
+                  <select
+                    value={formData.productId}
                     onChange={handleProductChange}
                     required
                   >
@@ -278,8 +362,8 @@ const SubProducts = () => {
                 </div>
                 <div className="form-group">
                   <label>Current Quantity</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={formData.quantity}
                     onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                     required
@@ -287,8 +371,8 @@ const SubProducts = () => {
                 </div>
                 <div className="form-group">
                   <label>Minimum Quantity Alert</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={formData.minimumQuantity}
                     onChange={(e) => setFormData({ ...formData, minimumQuantity: e.target.value })}
                     required
@@ -296,8 +380,8 @@ const SubProducts = () => {
                 </div>
                 <div className="form-group">
                   <label>Sale Price (₹)</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     required
@@ -305,8 +389,8 @@ const SubProducts = () => {
                 </div>
                 <div className="form-group">
                   <label>Rack Number</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={formData.rackNumber}
                     onChange={(e) => setFormData({ ...formData, rackNumber: e.target.value })}
                   />

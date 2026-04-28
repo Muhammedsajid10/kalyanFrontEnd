@@ -12,13 +12,15 @@ const StocksReport = () => {
   const [franchises, setFranchises] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const LIMIT = 15;
 
-  const fetchData = async () => {
+  const fetchData = async (currentPage) => {
     setLoading(true);
     try {
       const query = new URLSearchParams({
-        page,
-        limit: 15,
+        page: currentPage,
+        limit: LIMIT,
         search: searchTerm,
         type: typeFilter,
         franchise: franchiseFilter
@@ -31,6 +33,7 @@ const StocksReport = () => {
       
       setReports(stockRes.data.results || []);
       setTotalPages(stockRes.data.totalPages || 1);
+      setTotalCount(stockRes.data.totalCount || 0);
       setFranchises(franRes.data.franchise || []);
     } catch (error) {
       console.error('Error fetching reports:', error);
@@ -39,12 +42,23 @@ const StocksReport = () => {
     }
   };
 
+  // Reset page to 1 when filters/search change, then fetch
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
-      fetchData();
-    }, 500);
+      setPage(1);
+      fetchData(1);
+    }, 400);
     return () => clearTimeout(delayDebounce);
-  }, [searchTerm, typeFilter, franchiseFilter, page]);
+  }, [searchTerm, typeFilter, franchiseFilter]);
+
+  // Fetch when page changes (filter changes already handle via above effect)
+  useEffect(() => {
+    fetchData(page);
+  }, [page]);
+
+  const handlePageChange = (p) => {
+    if (p >= 1 && p <= totalPages) setPage(p);
+  };
 
   return (
     <div className="page-container">
@@ -138,19 +152,51 @@ const StocksReport = () => {
           </table>
         </div>
 
-        <div className="pagination">
-          <button 
-            disabled={page === 1} 
-            onClick={() => setPage(page - 1)}
-            className="pager-btn"
-          >Previous</button>
-          <span className="page-info">Page {page} of {totalPages}</span>
-          <button 
-            disabled={page === totalPages} 
-            onClick={() => setPage(page + 1)}
-            className="pager-btn"
-          >Next</button>
-        </div>
+        {/* Pagination */}
+        {!loading && totalCount > 0 && (
+          <div className="pagination-bar">
+            <span className="pagination-info">
+              Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, totalCount)} of {totalCount} records
+            </span>
+            <div className="pagination-controls">
+              <button
+                className="page-btn"
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+              >
+                ‹
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                .reduce((acc, p, idx, arr) => {
+                  if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((item, idx) =>
+                  item === '...' ? (
+                    <span key={`ellipsis-${idx}`} className="page-ellipsis">…</span>
+                  ) : (
+                    <button
+                      key={item}
+                      className={`page-btn ${page === item ? 'active' : ''}`}
+                      onClick={() => handlePageChange(item)}
+                    >
+                      {item}
+                    </button>
+                  )
+                )
+              }
+              <button
+                className="page-btn"
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
